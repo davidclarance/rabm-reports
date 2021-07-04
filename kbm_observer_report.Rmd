@@ -1,0 +1,91 @@
+---
+title: "KBM Observer Report"
+author: "David Clarance"
+date: "7/4/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+# Introduction
+
+```{r, include=FALSE}
+report_start_date = as.Date("2021-05-01")
+report_end_date = as.Date("2021-06-30")
+```
+
+The current report is generated for the period: `r report_start_date` to `r report_end_date`
+
+
+```{r setup, include=FALSE, results="hide"}
+# markdown options
+knitr::opts_chunk$set(echo = TRUE)
+
+# set up libraries
+library(dplyr)
+library(ggplot2)
+library(rabm)
+library(lubridate)
+library(glue)
+source("code/observer_report_functions.R")
+
+raw_data <- get_raw_records("kenya")
+
+virgin_penads = get_virgin_pentads_covered(
+  raw_data = raw_data,
+  report_start_date = report_start_date,
+  report_end_date = report_end_date
+)
+
+submissions_data = get_submission_count(
+  raw_data = raw_data,
+  report_start_date = report_start_date,
+  report_end_date = report_end_date
+)
+
+write.csv(
+  virgin_penads,
+  glue(
+    "data/virgin_pentads_{report_start_date}_{report_end_date}.csv"
+  )
+)
+
+write.csv(
+  submissions_data,
+  glue(
+    "data/submissions_data_{report_start_date}_{report_end_date}.csv"
+  )
+)
+```
+
+
+# Virgin Pentads Covered
+
+
+```{r, echo = FALSE}
+
+virgin_penads %>% 
+  group_by(ObserverName) %>% 
+  count(sort = TRUE, name = "VirginPentadsCovered")
+
+```
+
+
+# Submission of Full Protocol Cards
+
+```{r, echo=FALSE}
+submissions_data %>% 
+  arrange(desc(NumberOfFPCards)) %>% 
+  select(ObserverName, NumberOfFPCards)
+```
+
+
+# Number of Pentads Covered
+
+```{r, echo=FALSE}
+submissions_data %>% 
+  arrange(desc(NumberOfPentads)) %>% 
+  select(ObserverName, NumberOfPentads)
+```
+
